@@ -41,7 +41,16 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle} from "@/components/ui/alert-dialog";
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export default function Dashboard() {
   const [isDialogForeOpen, setIsDialogForOpen] = useState<boolean>(false);
@@ -52,15 +61,18 @@ export default function Dashboard() {
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
 
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+
   const getListTask = async () => {
-    listTaskService().then((data) => {
-      setTasks(data);
+    listTaskService(currentPage, 12).then((data) => {
+      setTasks(data.data);
     });
   };
 
   useEffect(() => {
     getListTask();
-  }, []);
+  }, [currentPage]);
 
   const createTask = () => {
     createTaskService({
@@ -88,6 +100,18 @@ export default function Dashboard() {
         setIsDialogDeleteOpen(false);
       }
     });
+  };
+
+  const renderPageNumber = () => {
+    const pageNumberComponent = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pageNumberComponent.push(
+        <PaginationItem key={i} onClick={() => setCurrentPage(i + 1)}>
+          <PaginationLink className="cursor-pointer">{i + 1}</PaginationLink>
+        </PaginationItem>,
+      );
+    }
+    return pageNumberComponent;
   };
 
   return (
@@ -141,6 +165,19 @@ export default function Dashboard() {
                         </li>
                       ))}
                     </ul>
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious />
+                        </PaginationItem>
+
+                        {renderPageNumber()}
+
+                        <PaginationItem>
+                          <PaginationNext />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
                   </CardContent>
                 </Card>
               </div>
@@ -180,7 +217,6 @@ export default function Dashboard() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-
 
         <AlertDialog
           open={isDialogDeleteOpen}
